@@ -1,0 +1,432 @@
+// prisma/schema.prisma — FHI Export Trade Calculator
+// Phases 0, 1 & 2 schema (Phase 4 adds BuyerNote, FollowUp, ActivityLog, Notification, QuoteTemplate)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  TRADE_MANAGER
+  SALES
+  FINANCE
+  OPERATIONS
+}
+
+enum BuyerCategory {
+  DISTRIBUTOR
+  RETAILER
+  HOSPITALITY
+  IMPORTER
+  WHOLESALER
+  MARKETPLACE
+  OEM_BUYER
+}
+
+enum Currency {
+  INR
+  AUD
+  NZD
+  JPY
+  USD
+  EUR
+}
+
+enum QuoteStatus {
+  DRAFT
+  UNDER_REVIEW
+  SENT_TO_BUYER
+  NEGOTIATION
+  APPROVED
+  PO_RECEIVED
+  SHIPMENT_PLANNED
+  CLOSED
+  LOST
+}
+
+enum Incoterm {
+  EXW
+  FOB
+  CIF
+  CFR
+  DDP
+}
+
+enum CostCategory {
+  PRODUCT
+  LOGISTICS
+  OPERATIONAL
+  MARGIN
+}
+
+enum DocType {
+  QUOTATION_PDF
+  PROFORMA_INVOICE
+  PRODUCT_SPEC_SHEET
+  PACKING_SUMMARY
+  INTERNAL_COSTING
+  MARGIN_ANALYSIS
+}
+
+// ─── Phase 0 — Users & Auth ──────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(SALES)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quotes              Quote[]
+  quoteStatusChanges  QuoteStatusHistory[]
+  buyerNotes          BuyerNote[]
+  followUps           FollowUp[]
+  activityLogs        ActivityLog[]
+  notifications       Notification[]
+  quoteTemplates      QuoteTemplate[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// ─── Phase 1 — Buyers ────────────────────────────────────────────────
+
+model Buyer {
+  id              String        @id @default(cuid())
+  name            String
+  companyName     String
+  email           String
+  phone           String?
+  address         String?
+  country         String
+  region          String?
+  currency        Currency      @default(USD)
+  buyerCategory   BuyerCategory
+  portOfDest      String?
+  notes           String?
+  productInterests String[]
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  quotes    Quote[]
+  buyerNotes BuyerNote[]
+  followUps  FollowUp[]
+
+  @@index([country])
+  @@index([buyerCategory])
+  @@map("buyers")
+}
+
+// ─── Phase 1 — Products ──────────────────────────────────────────────
+
+model ProductLine {
+  id         String            @id @default(cuid())
+  name       String            @unique
+  code       String            @unique
+  isActive   Boolean           @default(true)
+  categories ProductCategory[]
+
+  @@map("product_lines")
+}
+
+model ProductCategory {
+  id            String        @id @default(cuid())
+  name          String
+  code          String
+  productLineId String
+  productLine   ProductLine   @relation(fields: [productLineId], references: [id])
+  types         ProductType[]
+
+  @@map("product_categories")
+}
+
+model ProductType {
+  id         String          @id @default(cuid())
+  name       String
+  code       String
+  categoryId String
+  category   ProductCategory @relation(fields: [categoryId], references: [id])
+  products   Product[]
+
+  @@map("product_types")
+}
+
+model Product {
+  id               String      @id @default(cuid())
+  productCode      String      @unique
+  description      String
+  productTypeId    String
+  productType      ProductType @relation(fields: [productTypeId], references: [id])
+  moq              Int?
+  imageUrl         String?
+  isActive         Boolean     @default(true)
+  attributes       Json?       // Category-specific dynamic attributes
+  baseSupplierCost Decimal?    @db.Decimal(12, 2)
+  packagingDetails Json?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  quoteItems QuoteItem[]
+
+  @@index([productCode])
+  @@index([productTypeId])
+  @@map("products")
+}
+
+// ─── Phase 1 — Suppliers ─────────────────────────────────────────────
+
+model Supplier {
+  id            String   @id @default(cuid())
+  name          String
+  contactPerson String?
+  email         String?
+  phone         String?
+  address       String?
+  region        String?
+  gstNumber     String?
+  iecNumber     String?
+  exportCapable Boolean  @default(true)
+  moq           Int?
+  leadTimeDays  Int?
+  certifications String[]
+  notes         String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("suppliers")
+}
+
+// ─── Phase 1 — Cost Templates (Master Rates) ─────────────────────────
+
+model FreightTemplate {
+  id                 String   @id @default(cuid())
+  name               String
+  originPort         String
+  destinationPort    String
+  destinationCountry String
+  freightCost20ft    Decimal  @db.Decimal(12, 2)
+  freightCost40ft    Decimal  @db.Decimal(12, 2)
+  transitDays        Int?
+  validFrom          DateTime
+  validTo            DateTime?
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  @@index([destinationCountry])
+  @@map("freight_templates")
+}
+
+model PortChargeTemplate {
+  id              String   @id @default(cuid())
+  portName        String   @unique
+  chaCharges      Decimal  @db.Decimal(12, 2)
+  portCharges     Decimal  @db.Decimal(12, 2)
+  handlingCharges Decimal  @db.Decimal(12, 2)
+  documentCharges Decimal  @db.Decimal(12, 2)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@map("port_charge_templates")
+}
+
+model CurrencyRate {
+  id           String   @id @default(cuid())
+  fromCurrency Currency
+  toCurrency   Currency
+  rate         Decimal  @db.Decimal(12, 6)
+  source       String   @default("MANUAL")
+  lockedDate   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@map("currency_rates")
+}
+
+// ─── Phase 2 — Quotes ────────────────────────────────────────────────
+
+model Quote {
+  id            String      @id @default(cuid())
+  quoteNumber   String      @unique
+  status        QuoteStatus @default(DRAFT)
+  incoterm      Incoterm
+  buyerId       String
+  buyer         Buyer       @relation(fields: [buyerId], references: [id])
+  createdById   String
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  currency      Currency
+  exchangeRate  Decimal     @db.Decimal(12, 6)
+  fxBuffer      Decimal     @db.Decimal(5, 2)
+  notes         String?
+  internalNotes String?
+  validUntil    DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items         QuoteItem[]
+  costs         QuoteCost[]
+  statusHistory QuoteStatusHistory[]
+  documents     QuoteDocument[]
+
+  @@index([buyerId])
+  @@index([status])
+  @@index([createdById])
+  @@index([createdAt])
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id                   String   @id @default(cuid())
+  quoteId              String
+  quote                Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId            String
+  product              Product  @relation(fields: [productId], references: [id])
+  quantity             Int
+  unitSupplierCost     Decimal  @db.Decimal(12, 2)
+  packagingCostPerUnit Decimal  @db.Decimal(12, 2)
+  labelingCostPerUnit  Decimal  @db.Decimal(12, 2)
+  qcCostPerUnit        Decimal  @db.Decimal(12, 2)
+  samplingCost         Decimal  @db.Decimal(12, 2)
+  toolingCost          Decimal  @db.Decimal(12, 2)
+  marginPercent        Decimal  @db.Decimal(5, 2)
+  totalProductCostInr  Decimal  @db.Decimal(14, 2)
+  unitSellingPrice     Decimal  @db.Decimal(12, 4)
+  totalLineValue       Decimal  @db.Decimal(14, 4)
+  unitsPerCarton       Int?
+  cartonsPerPallet     Int?
+  cartonLWHCm          Json?
+  cartonWeightKg       Decimal? @db.Decimal(8, 2)
+  totalCbm             Decimal? @db.Decimal(10, 4)
+  totalWeightKg        Decimal? @db.Decimal(10, 2)
+
+  @@index([quoteId])
+  @@map("quote_items")
+}
+
+model QuoteCost {
+  id         String       @id @default(cuid())
+  quoteId    String
+  quote      Quote        @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  category   CostCategory
+  label      String
+  amount     Decimal      @db.Decimal(12, 2)
+  isIncluded Boolean      @default(true)
+  isOptional Boolean      @default(false)
+  notes      String?
+
+  @@index([quoteId])
+  @@map("quote_costs")
+}
+
+model QuoteStatusHistory {
+  id          String      @id @default(cuid())
+  quoteId     String
+  quote       Quote       @relation(fields: [quoteId], references: [id])
+  fromStatus  QuoteStatus?
+  toStatus    QuoteStatus
+  changedAt   DateTime    @default(now())
+  changedById String
+  changedBy   User        @relation(fields: [changedById], references: [id])
+  note        String?
+
+  @@index([quoteId])
+  @@map("quote_status_history")
+}
+
+model QuoteDocument {
+  id        String   @id @default(cuid())
+  quoteId   String
+  quote     Quote    @relation(fields: [quoteId], references: [id])
+  type      DocType
+  url       String
+  createdAt DateTime @default(now())
+
+  @@index([quoteId])
+  @@map("quote_documents")
+}
+
+// ─── Phase 4 — CRM & Analytics ───────────────────────────────────────
+
+model BuyerNote {
+  id          String   @id @default(cuid())
+  buyerId     String
+  buyer       Buyer    @relation(fields: [buyerId], references: [id])
+  content     String
+  isInternal  Boolean  @default(true)
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([buyerId])
+  @@map("buyer_notes")
+}
+
+model FollowUp {
+  id          String    @id @default(cuid())
+  buyerId     String?
+  buyer       Buyer?    @relation(fields: [buyerId], references: [id])
+  quoteId     String?
+  title       String
+  description String?
+  dueDate     DateTime
+  isDone      Boolean   @default(false)
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@index([dueDate])
+  @@index([createdById])
+  @@map("follow_ups")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  type        String
+  description String
+  quoteId     String?
+  buyerId     String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@map("activity_logs")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model QuoteTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  quoteData   Json
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@map("quote_templates")
+}
