@@ -45,3 +45,6 @@ Thumbs.db
 # Test coverage
 coverage/
 
+# LibreOffice / Office temp lock files
+.~lock.*
+
