@@ -45,5 +45,3 @@ Thumbs.db
 # Test coverage
 coverage/
 
-# Planning documentation (internal — not for version control)
-../docs/
