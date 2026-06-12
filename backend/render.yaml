@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: fhi-backend
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: npm install && npm run build --workspace=backend && npx prisma migrate deploy --schema=backend/prisma/schema.prisma
+    startCommand: npm run start --workspace=backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        sync: false        # Set manually in the Render dashboard
+      - key: JWT_SECRET
+        sync: false        # Set manually in the Render dashboard
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false        # Set to your Vercel URL after deploying
