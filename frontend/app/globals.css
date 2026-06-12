@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /*
@@ -32,6 +33,9 @@
   --color-navy: var(--fhi-navy);
   --color-navy-light: var(--fhi-navy-light);
   --color-gold: var(--fhi-gold);
+
+  /* Aurora brand token */
+  --color-brand-gray: #1A1A1A;
 
   /* Radius scale derived from a single --radius token */
   --radius-sm: calc(var(--radius) - 4px);

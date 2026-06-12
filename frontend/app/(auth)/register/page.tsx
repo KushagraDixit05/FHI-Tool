@@ -2,32 +2,37 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'sonner';
 import { motion } from 'motion/react';
-import { Circle, Eye, EyeOff, Globe, Network, FileCheck, Code2 } from 'lucide-react';
-import type { ElementType } from 'react';
-import { useAuthStore } from '@/store/auth.store';
-
-const loginSchema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
+import { Circle, Eye, EyeOff, Globe, Code2 } from 'lucide-react';
+import type { ReactNode, ElementType } from 'react';
 
 /* ─────────────────────────────────────────────
-   Sub-components
+   Reusable sub-components
 ───────────────────────────────────────────── */
 
-function FeaturePill({ icon: Icon, label }: { icon: ElementType; label: string }) {
+function StepItem({
+  number,
+  text,
+  active = false,
+}: {
+  number: number;
+  text: string;
+  active?: boolean;
+}) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white">
-      <Icon className="h-4 w-4 text-white/60" />
-      {label}
+    <div
+      className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${active
+        ? 'border border-white bg-white text-black'
+        : 'bg-brand-gray border-none text-white'
+        }`}
+    >
+      <span
+        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold leading-none ${active ? 'bg-black text-white' : 'bg-white/10 text-white/40'
+          }`}
+      >
+        {number}
+      </span>
+      {text}
     </div>
   );
 }
@@ -41,6 +46,32 @@ function SocialButton({ icon: Icon, label }: { icon: ElementType; label: string 
       <Icon className="h-4 w-4" />
       {label}
     </button>
+  );
+}
+
+function InputGroup({
+  label,
+  placeholder,
+  type = 'text',
+  children,
+}: {
+  label: string;
+  placeholder: string;
+  type?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-medium text-white">{label}</label>
+      <div className="relative">
+        <input
+          type={type}
+          placeholder={placeholder}
+          className="h-11 w-full rounded-xl bg-brand-gray px-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-white/20"
+        />
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -65,29 +96,8 @@ const heroItem = {
    Main Page
 ───────────────────────────────────────────── */
 
-export default function LoginPage() {
-  const router = useRouter();
-  const { login, isLoading } = useAuthStore();
+export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
-
-  const onSubmit = async (data: LoginForm) => {
-    try {
-      await login(data.email, data.password);
-      document.cookie = `fhi_token=${useAuthStore.getState().token}; path=/; max-age=${7 * 24 * 3600}`;
-      toast.success('Welcome back!');
-      router.push('/dashboard');
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Invalid credentials';
-      toast.error(msg);
-    }
-  };
 
   return (
     <main className="flex min-h-screen w-full bg-black p-2 text-white selection:bg-white/30 transition-all duration-500 lg:h-screen lg:overflow-hidden lg:p-4">
@@ -125,18 +135,18 @@ export default function LoginPage() {
           {/* Heading Block */}
           <motion.div variants={heroItem} className="space-y-2">
             <h1 className="text-4xl font-medium tracking-tight whitespace-nowrap">
-              Welcome back
+              Join Flourish High International
             </h1>
             <p className="px-4 text-sm leading-relaxed text-white/60">
-              Sign in to access your trade workspace and tools.
+              Follow these 3 quick phases to activate your space.
             </p>
           </motion.div>
 
-          {/* Feature pills */}
+          {/* Steps */}
           <motion.div variants={heroItem} className="space-y-2">
-            <FeaturePill icon={FileCheck} label="Export-Ready Quotes" />
-            <FeaturePill icon={Globe} label="Global Currencies" />
-            <FeaturePill icon={Network} label="Supplier Network" />
+            <StepItem number={1} text="Create your account" active />
+            <StepItem number={2} text="Set up your trade workspace" />
+            <StepItem number={3} text="Launch your first quotation" />
           </motion.div>
         </motion.div>
       </div>
@@ -151,9 +161,9 @@ export default function LoginPage() {
         >
           {/* Header */}
           <div className="space-y-1">
-            <h2 className="text-3xl font-medium tracking-tight">Sign In</h2>
+            <h2 className="text-3xl font-medium tracking-tight">Create New Profile</h2>
             <p className="text-sm text-white/40">
-              Enter your credentials to continue.
+              Input your basic details to begin the journey.
             </p>
           </div>
 
@@ -173,33 +183,23 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-            {/* Email */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-white">Email</label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@flourishhigh.com"
-                {...register('email')}
-                className="h-11 w-full rounded-xl bg-brand-gray px-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-white/20"
-              />
-              {errors.email && (
-                <p className="text-xs text-red-400">{errors.email.message}</p>
-              )}
+          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+            {/* Name row */}
+            <div className="grid grid-cols-2 gap-4">
+              <InputGroup label="First Name" placeholder="Jane" />
+              <InputGroup label="Last Name" placeholder="Doe" />
             </div>
+
+            {/* Email */}
+            <InputGroup label="Email" placeholder="jane@example.com" type="email" />
 
             {/* Password */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-white">Password</label>
+              <label className="text-sm font-medium text-white">Password</label>
               <div className="relative">
                 <input
-                  id="password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
                   placeholder="••••••••"
-                  {...register('password')}
                   className="h-11 w-full rounded-xl bg-brand-gray px-4 pr-12 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-white/20"
                 />
                 <button
@@ -208,32 +208,33 @@ export default function LoginPage() {
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/70"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-xs text-red-400">{errors.password.message}</p>
-              )}
+              <p className="text-xs text-white/30">Requires at least 8 symbols.</p>
             </div>
 
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="mt-4 h-14 w-full rounded-xl bg-white font-semibold text-black transition-all hover:bg-white/90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="mt-4 h-14 w-full rounded-xl bg-white font-semibold text-black transition-all hover:bg-white/90 active:scale-[0.98]"
             >
-              {isLoading ? 'Signing in…' : 'Sign in'}
+              Create Account
             </button>
           </form>
 
           {/* Footer link */}
           <p className="text-center text-sm text-white/40">
-            New to FHI?{' '}
+            Member of the team?{' '}
             <Link
-              href="/register"
+              href="/login"
               className="font-medium text-white underline-offset-2 hover:underline"
             >
-              Create account
+              Log in
             </Link>
           </p>
         </motion.div>

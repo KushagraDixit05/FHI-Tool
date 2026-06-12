@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: fhi-postgres
+    environment:
+      POSTGRES_USER: fps_user
+      POSTGRES_PASSWORD: kushagra123
+      POSTGRES_DB: fhi_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - fhi_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  fhi_pgdata:
