@@ -128,7 +128,7 @@ export default function LoginPage() {
               Welcome back
             </h1>
             <p className="px-4 text-sm leading-relaxed text-white/60">
-              Sign in to access your trade workspace and tools.
+              Log in to access your trade workspace and tools.
             </p>
           </motion.div>
 
@@ -151,7 +151,7 @@ export default function LoginPage() {
         >
           {/* Header */}
           <div className="space-y-1">
-            <h2 className="text-3xl font-medium tracking-tight">Sign In</h2>
+            <h2 className="text-3xl font-medium tracking-tight">Log In</h2>
             <p className="text-sm text-white/40">
               Enter your credentials to continue.
             </p>
@@ -222,7 +222,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="mt-4 h-14 w-full rounded-xl bg-white font-semibold text-black transition-all hover:bg-white/90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in…' : 'Sign in'}
+              {isLoading ? 'Logging in…' : 'Log in'}
             </button>
           </form>
 

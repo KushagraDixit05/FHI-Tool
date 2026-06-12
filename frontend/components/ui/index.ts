@@ -15,3 +15,5 @@ export { StatusBadge, RoleBadge } from './StatusBadge';
 export { DataTable, type Column, type DataTableAction } from './DataTable';
 export { EmptyState } from './EmptyState';
 export { PageHeader } from './PageHeader';
+export { SpiralAnimation } from './spiral-animation';
+export { default as EtherealBeamsHero } from './ethereal-beams-hero';
