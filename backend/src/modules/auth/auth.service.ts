@@ -3,13 +3,14 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../../config/db';
 import { env } from '../../config/env';
 import { RegisterInput, LoginInput } from './auth.schema';
+import { AppError } from '../../shared/errors/AppError';
 
 type Role = 'ADMIN' | 'TRADE_MANAGER' | 'SALES' | 'FINANCE' | 'OPERATIONS';
 
 export async function registerUser(data: RegisterInput) {
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) {
-    throw Object.assign(new Error('Email already in use'), { statusCode: 409 });
+    throw new AppError(409, 'Email already in use');
   }
 
   const hashedPassword = await bcrypt.hash(data.password, 12);
@@ -39,12 +40,12 @@ export async function loginUser(data: LoginInput) {
   const user = await prisma.user.findUnique({ where: { email: data.email } });
 
   if (!user || !user.isActive) {
-    throw Object.assign(new Error('Invalid credentials'), { statusCode: 401 });
+    throw new AppError(401, 'Invalid credentials');
   }
 
   const isPasswordValid = await bcrypt.compare(data.password, user.password);
   if (!isPasswordValid) {
-    throw Object.assign(new Error('Invalid credentials'), { statusCode: 401 });
+    throw new AppError(401, 'Invalid credentials');
   }
 
   const token = generateToken(user.id, user.email, user.role);
@@ -65,7 +66,7 @@ export async function getUserById(userId: string) {
       createdAt: true,
     },
   });
-  if (!user) throw Object.assign(new Error('User not found'), { statusCode: 404 });
+  if (!user) throw new AppError(404, 'User not found');
   return user;
 }
 

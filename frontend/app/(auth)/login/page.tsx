@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { Eye, EyeOff, TrendingUp, Globe, FileText } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
-import type { Metadata } from 'next';
+import { Button, Input, FormField } from '@/components/ui';
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -46,10 +46,7 @@ export default function LoginPage() {
     <div className="space-y-8">
       {/* Logo & Brand */}
       <div className="text-center">
-        <div
-          className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg"
-          style={{ background: 'var(--fhi-navy)' }}
-        >
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg bg-primary">
           <Globe className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-slate-900">Flourish High International</h1>
@@ -62,67 +59,44 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
-              Email address
-            </label>
-            <input
+          <FormField label="Email address" htmlFor="email" error={errors.email?.message}>
+            <Input
               id="email"
               type="email"
               autoComplete="email"
               {...register('email')}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-              style={{ '--tw-ring-color': 'var(--fhi-navy)' } as React.CSSProperties}
+              invalid={!!errors.email}
               placeholder="you@flourishhigh.com"
             />
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-            )}
-          </div>
+          </FormField>
 
           {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
-              Password
-            </label>
+          <FormField label="Password" htmlFor="password" error={errors.password?.message}>
             <div className="relative">
-              <input
+              <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 {...register('password')}
-                className="w-full px-4 py-2.5 pr-11 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                invalid={!!errors.password}
+                className="pr-11"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
-            )}
-          </div>
+          </FormField>
 
           {/* Submit */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 rounded-lg text-white font-semibold text-sm transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-md"
-            style={{ background: 'var(--fhi-navy)' }}
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Signing in…
-              </span>
-            ) : (
-              'Sign in'
-            )}
-          </button>
+          <Button type="submit" size="lg" loading={isLoading} className="w-full">
+            Sign in
+          </Button>
         </form>
       </div>
 

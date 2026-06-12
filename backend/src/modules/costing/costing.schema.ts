@@ -1,0 +1,41 @@
+import { z } from 'zod';
+
+const costingInputSchema = z.object({
+  body: z.object({
+    quantity: z.number().int().positive('Quantity must be positive'),
+    unitSupplierCost: z.number().nonnegative(),
+    packagingCostPerUnit: z.number().nonnegative(),
+    labelingCostPerUnit: z.number().nonnegative(),
+    qcCostPerUnit: z.number().nonnegative(),
+    samplingCost: z.number().nonnegative(),
+    toolingCost: z.number().nonnegative(),
+    inlandTransport: z.number().nonnegative(),
+    freightCost: z.number().nonnegative(),
+    chaCharges: z.number().nonnegative(),
+    portCharges: z.number().nonnegative(),
+    customsClearance: z.number().nonnegative(),
+    documentCharges: z.number().nonnegative(),
+    palletization: z.number().nonnegative(),
+    fumigation: z.number().nonnegative(),
+    warehousing: z.number().nonnegative(),
+    insurance: z.number().nonnegative(),
+    containerCost: z.number().nonnegative(),
+    handlingCharges: z.number().nonnegative(),
+    exportDuty: z.number().nonnegative(),
+    inspectionCharges: z.number().nonnegative(),
+    bankCharges: z.number().nonnegative(),
+    currencyConversionBuffer: z.number().nonnegative(),
+    platformAdminCost: z.number().nonnegative(),
+    travelCostAllocation: z.number().nonnegative(),
+    communicationCost: z.number().nonnegative(),
+    agentCommission: z.number().nonnegative(),
+    miscBuffer: z.number().nonnegative(),
+    marginPercent: z.number().min(0).max(100),
+    riskBufferPercent: z.number().min(0).max(50),
+    exchangeRate: z.number().positive('Exchange rate must be positive'),
+    fxBufferPercent: z.number().min(0).max(20),
+    incoterm: z.enum(['EXW', 'FOB', 'CIF', 'CFR', 'DDP']),
+  }),
+});
+
+export { costingInputSchema };

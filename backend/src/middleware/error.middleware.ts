@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { logger } from '../config/logger';
 import { env } from '../config/env';
+import { AppError } from '../shared/errors/AppError';
 
 export function errorMiddleware(
   err: Error,
@@ -9,6 +10,12 @@ export function errorMiddleware(
   res: Response,
   next: NextFunction
 ): void {
+  // Operational errors thrown by our own services (404, 409, 400, …)
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+
   // Zod validation errors
   if (err instanceof ZodError) {
     res.status(400).json({
@@ -41,6 +48,13 @@ export function errorMiddleware(
   }
   if (err.name === 'TokenExpiredError') {
     res.status(401).json({ error: 'Token expired — please log in again' });
+    return;
+  }
+
+  // Defensive fallback for any error carrying a numeric `statusCode`
+  const withStatus = err as { statusCode?: number };
+  if (typeof withStatus.statusCode === 'number') {
+    res.status(withStatus.statusCode).json({ error: err.message });
     return;
   }
 
