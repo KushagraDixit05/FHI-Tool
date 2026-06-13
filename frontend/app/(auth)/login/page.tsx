@@ -9,7 +9,9 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Circle, Eye, EyeOff, Globe, Network, FileCheck, Code2 } from 'lucide-react';
-import type { ElementType } from 'react';
+import type { ComponentType, SVGProps } from 'react';
+
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 import { useAuthStore } from '@/store/auth.store';
 
 const loginSchema = z.object({
@@ -23,7 +25,7 @@ type LoginForm = z.infer<typeof loginSchema>;
    Sub-components
 ───────────────────────────────────────────── */
 
-function FeaturePill({ icon: Icon, label }: { icon: ElementType; label: string }) {
+function FeaturePill({ icon: Icon, label }: { icon: IconComponent; label: string }) {
   return (
     <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white">
       <Icon className="h-4 w-4 text-white/60" />
@@ -32,7 +34,7 @@ function FeaturePill({ icon: Icon, label }: { icon: ElementType; label: string }
   );
 }
 
-function SocialButton({ icon: Icon, label }: { icon: ElementType; label: string }) {
+function SocialButton({ icon: Icon, label }: { icon: IconComponent; label: string }) {
   return (
     <button
       type="button"
