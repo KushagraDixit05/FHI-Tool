@@ -4,7 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { Circle, Eye, EyeOff, Globe, Code2 } from 'lucide-react';
-import type { ReactNode, ElementType } from 'react';
+import type { ReactNode, ComponentType, SVGProps } from 'react';
+
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 /* ─────────────────────────────────────────────
    Reusable sub-components
@@ -37,7 +39,7 @@ function StepItem({
   );
 }
 
-function SocialButton({ icon: Icon, label }: { icon: ElementType; label: string }) {
+function SocialButton({ icon: Icon, label }: { icon: IconComponent; label: string }) {
   return (
     <button
       type="button"

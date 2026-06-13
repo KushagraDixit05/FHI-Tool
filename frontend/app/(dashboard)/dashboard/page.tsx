@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import type { ComponentType, SVGProps } from 'react';
+
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 import {
   TrendingUp,
   FileText,
@@ -27,7 +30,7 @@ function KpiCard({
   value: string;
   delta?: number;
   deltaLabel?: string;
-  icon: React.ElementType;
+  icon: IconComponent;
   color: string;
 }) {
   const isPositive = (delta ?? 0) >= 0;
@@ -64,7 +67,7 @@ function QuickAction({
   label: string;
   description: string;
   href: string;
-  icon: React.ElementType;
+  icon: IconComponent;
 }) {
   return (
     <a
