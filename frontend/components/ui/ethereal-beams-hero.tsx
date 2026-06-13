@@ -514,12 +514,11 @@ export default function EtherealBeamsHero() {
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
               {/* Logo — left */}
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-black flex items-center justify-center overflow-hidden ring-1 ring-yellow-600/40 shrink-0">
-                  <img src="/fhi-logo.png" alt="FHI" className="h-11 w-11 object-contain" />
+              <a href="/" className="flex items-center" aria-label="FHI home">
+                <div className="relative h-20 w-20 shrink-0">
+                  <Image src="/fhi-logo.png" alt="Flourish High International" fill sizes="80px" className="object-contain" priority />
                 </div>
-                <span className="text-xl font-bold text-white tracking-tight">FHI</span>
-              </div>
+              </a>
 
               {/* Nav pills — absolutely centered */}
               <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-1 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 p-1">
@@ -864,8 +863,8 @@ export default function EtherealBeamsHero() {
           {/* Col 1: Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-full bg-black flex items-center justify-center overflow-hidden ring-1 ring-yellow-600/40 shrink-0">
-                <Image src="/fhi-logo.png" alt="FHI" width={40} height={40} className="object-contain" />
+              <div className="relative h-11 w-11 shrink-0">
+                <Image src="/fhi-logo.png" alt="Flourish High International" fill sizes="44px" className="object-contain" />
               </div>
               <div>
                 <p className="font-bold text-white text-base leading-none">Flourish High</p>

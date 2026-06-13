@@ -20,20 +20,21 @@ import quoteRoutes from './modules/quotes/quote.routes';
 const app = express();
 
 // ─── Allowed Origins ──────────────────────────────────────────────────────────
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://fhi-tool-frontend.vercel.app',
-  env.FRONTEND_URL,
-].filter(Boolean);
+const allowedOriginPatterns = [
+  /^http:\/\/localhost:\d+$/,
+  /^https:\/\/.*\.vercel\.app$/,
+];
+
+const allowedOriginExact = [env.FRONTEND_URL].filter(Boolean) as string[];
 
 // ─── Security Headers ─────────────────────────────────────────────────────────
 app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (curl, Postman, server-to-server)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (allowedOriginExact.includes(origin)) return callback(null, true);
+      if (allowedOriginPatterns.some((re) => re.test(origin))) return callback(null, true);
       callback(new Error(`CORS: origin ${origin} not allowed`));
     },
     credentials: true,

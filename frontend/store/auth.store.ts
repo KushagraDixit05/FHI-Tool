@@ -16,6 +16,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
 }
@@ -32,6 +33,19 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const response = await api.post('/auth/login', { email, password });
+          const { user, token } = response.data;
+          localStorage.setItem('fhi_token', token);
+          set({ user, token, isAuthenticated: true, isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      register: async (name: string, email: string, password: string) => {
+        set({ isLoading: true });
+        try {
+          const response = await api.post('/auth/register', { name, email, password });
           const { user, token } = response.data;
           localStorage.setItem('fhi_token', token);
           set({ user, token, isAuthenticated: true, isLoading: false });
